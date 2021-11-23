@@ -17,7 +17,33 @@ document.addEventListener("DOMContentLoaded", function (_e) {
         if ("geolocation" in navigator) {
             var btnGeoloc = document.querySelector("#bcStations .btnGeoloc");
             btnGeoloc.classList.toggle("active");
-            // TODO
+              
+              function success(pos) {
+                var crd = pos.coords;
+                console.log('Votre position actuelle est :');
+                console.log(`Latitude : ${crd.latitude}`);
+                console.log(`Longitude : ${crd.longitude}`);
+                console.log(`La précision est de ${crd.accuracy} mètres.`);
+              }
+
+           /* const R = 6371e3; // metres
+            const a1 = lat1 * Math.PI/180; // φ, λ in radians
+            const a2 = lat2 * Math.PI/180;
+            const b1 = (lat2-lat1) * Math.PI/180;
+            const b2 = (lon2-lon1) * Math.PI/180;
+
+            const a = Math.sin(b1/2) * Math.sin(b1/2) +
+                    Math.cos(a1) * Math.cos(a2) *
+                    Math.sin(b2/2) * Math.sin(b2/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;*/
+            navigator.geolocation.getCurrentPosition(pos=>{
+                var crd = pos.coords;
+                console.log('Votre position actuelle est :');
+                console.log(`Latitude : ${crd.latitude}`);
+                console.log(`Longitude : ${crd.longitude}`);
+                console.log(`La précision est de ${crd.accuracy} mètres.`);
+            });
         }
         else {
             alert("Votre appareil ne supporte pas la géolocalisation.");    
