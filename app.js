@@ -16,6 +16,16 @@ document.addEventListener("DOMContentLoaded", function (_e) {
     function geoloc() {
         if ("geolocation" in navigator) {
             var btnGeoloc = document.querySelector("#bcStations .btnGeoloc");
+            if (btnGeoloc.classList.contains("active")) {
+                for (var st in stations) {
+                    delete stations[st].distance;   
+                }
+                fSort = null;
+                btnGeoloc.classList.remove("active");
+                remplirStations();
+                return;
+            }
+            var btnGeoloc = document.querySelector("#bcStations .btnGeoloc");
             btnGeoloc.classList.toggle("active");
               
               function success(pos) {
@@ -26,28 +36,39 @@ document.addEventListener("DOMContentLoaded", function (_e) {
                 console.log(`La précision est de ${crd.accuracy} mètres.`);
               }
 
-           /* const R = 6371e3; // metres
-            const a1 = lat1 * Math.PI/180; // φ, λ in radians
-            const a2 = lat2 * Math.PI/180;
-            const b1 = (lat2-lat1) * Math.PI/180;
-            const b2 = (lon2-lon1) * Math.PI/180;
-
-            const a = Math.sin(b1/2) * Math.sin(b1/2) +
-                    Math.cos(a1) * Math.cos(a2) *
-                    Math.sin(b2/2) * Math.sin(b2/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c;*/
-            navigator.geolocation.getCurrentPosition(pos=>{
-                var crd = pos.coords;
-                console.log('Votre position actuelle est :');
-                console.log(`Latitude : ${crd.latitude}`);
-                console.log(`Longitude : ${crd.longitude}`);
-                console.log(`La précision est de ${crd.accuracy} mètres.`);
+              navigator.geolocation.getCurrentPosition(function(position) {
+                fSort = function(position, id1, id2) {
+                    var d1 = distance(stations[id1].lat, stations[id1].lon, position.coords.latitude, position.coords.longitude);
+                    var d2 = distance(stations[id2].lat, stations[id2].lon, position.coords.latitude, position.coords.longitude);
+                    return d1 - d2;
+                }.bind(null, position);
+                for (var sta in stations) {
+                    var st = stations[sta];
+                    st.distance = distance(st.lat, st.lon, position.coords.latitude, position.coords.longitude) / 1000;
+                    st.distance = st.distance.toFixed(2);
+                }
+                btnGeoloc.classList.add("active");
+                remplirStations();
             });
-        }
-        else {
+        }else {
             alert("Votre appareil ne supporte pas la géolocalisation.");    
         }
+    }
+
+    function distance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // metres
+        const phi1 = lat1 * Math.PI/180; // φ, λ in radians
+        const phi2 = lat2 * Math.PI/180;
+        const deltaPhi = (lat2-lat1) * Math.PI/180;
+        const deltaLambda = (lon2-lon1) * Math.PI/180;
+
+        const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
+                  Math.cos(phi1) * Math.cos(phi2) *
+                  Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        const d = R * c; // in metres
+        return d;
     }
     
     
@@ -447,7 +468,7 @@ document.addEventListener("DOMContentLoaded", function (_e) {
      */
     function remplirStations() {
         var r = "";
-        // si un tri existe alors on trie par ordre alphabétique, sinon on trie par ordre alphabetique
+        // si un tri existe alors on trie, sinon on trie par ordre alphabetique
         var keys = fSort ? Object.keys(stations).sort(fSort) : Object.keys(stations).sort();
         for (var k in keys) {
             var station = stations[keys[k]];
